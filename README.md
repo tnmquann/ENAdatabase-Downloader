@@ -35,7 +35,7 @@ This will install the following dependencies:
 ## How to cite
 ```
 @misc{ENAsequences_download,
-  author = {Vinh Chau and Minh-Quan Ton-Ngoc},
+  author = {Vinh Chau},
   title = {ENAsequences-Downloader},
   year = {2018},
   publisher = {GitHub},
