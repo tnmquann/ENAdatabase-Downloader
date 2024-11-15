@@ -11,6 +11,9 @@ This script is licensed under the Apache License, Version 2.0. You are free to u
 - **Customizable:** easily adjustable, allowing users to tailor the tool for specific download requirements.
 
 ## Requirements
+To install the necessary Python packages, run:
+```pip install -r requirements.txt```
+This will install the following dependencies:
 * python >= 3.10
 * requests >= 2.0.0
 * tqdm >= 4.0.10
