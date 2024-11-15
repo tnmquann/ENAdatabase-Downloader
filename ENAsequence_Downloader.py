@@ -3,16 +3,18 @@ import argparse
 import csv
 import os
 import re
+import requests
 import sys
+import subprocess
 import urllib.error
 import urllib.parse as urlparse
 import urllib.request as urlrequest
-import requests
-from multiprocessing.dummy import Pool
-from tqdm.auto import tqdm
 from datetime import datetime
+from multiprocessing.dummy import Pool
 
 now = datetime.now()
+path_to_aria2 = 'PATH_TO_ARIA2'
+links_txt_file = 'links.txt'
 current_time = now.strftime("%d_%m_%Y %H_%M_%S")
 VIEW_URL_BASE = "https://www.ebi.ac.uk/ena/browser/api/"
 PORTAL_SEARCH_BASE = "https://www.ebi.ac.uk/ena/portal/api/filereport?"
@@ -123,30 +125,10 @@ def get_meta_data_from_xml(accession):
             result[4] = line_split[1].strip()
     return result
 
-
-class DownloadProgressBar(tqdm):
-    def update_to(self, b=1, bsize=1, tsize=None):
-        if tsize is not None:
-            self.total = tsize
-        self.update(b * bsize - self.n)
-
-
-def sub_download(position, ftp_url, path_save):
-    file_name = urlparse.unquote(ftp_url.split("/")[-1])
-    dest_file = os.path.join(path_save, file_name)
-    try:
-        with DownloadProgressBar(unit="B", unit_scale=True,
-                                 desc=file_name, position=position, ascii=" >") as t:
-            urlrequest.urlretrieve("ftp://" + ftp_url, dest_file, reporthook=t.update_to)
-    except (urllib.error.URLError, urllib.error.HTTPError):
-        print("Error with FTP transfer occurred for file: {}".format(file_name))
-        try:
-            with DownloadProgressBar(unit="B", unit_scale=True,
-                                     desc=file_name, position=position, ascii=" >") as t:
-                urlrequest.urlretrieve("https://" + ftp_url, dest_file, reporthook=t.update_to)
-        except (urllib.error.URLError, urllib.error.HTTPError):
-            print("Error with HTTPS transfer occurred for file: {}".format(file_name))
-
+def append_links_to_file(ftp_links, path_save):
+    with open(os.path.join(path_save, links_txt_file), 'a') as links_file:
+        for link in ftp_links:
+            links_file.write(f'ftp://{link}\n')
 
 def download_from_ena(accession_code, path_save, option):
     check_path = os.path.isdir(path_save)
@@ -172,6 +154,7 @@ def download_from_ena(accession_code, path_save, option):
             check_path = os.path.isdir(path_save)
     check_code = check_availability(accession_code)
     metadata = list()
+    ftp_links = list()  # to store fastq ftp links
     if check_code != -1:
         print("Checking availability: Done")
         search_url = get_file_search_query(accession_code)
@@ -179,23 +162,26 @@ def download_from_ena(accession_code, path_save, option):
         lines = download_report_from_portal(search_url)
         for line in lines[1:]:
             meta_data_report, ftp_list = parse_file_search_result_line(line)
-            if option != 1:
-                pool = Pool(len(ftp_list))
-                pool.starmap(sub_download, zip(range(len(ftp_list)), ftp_list, [path_save] * len(ftp_list)))
-                pool.close()
-                pool.join()
+            ftp_links.extend(ftp_list)  # append fastq ftp links
             meta_data_xml = get_meta_data_from_xml(meta_data_report[1])
             meta_data_report.extend(meta_data_xml)
             metadata.append(meta_data_report)
+
         print("Get data: Done")
+
+        # Save ftp links ending in "fastq.gz" to text file
+        if option != 1:
+            append_links_to_file(ftp_links, path_save)
+
     else:
         print("ERROR: Record does not exist or is not available for accession provided\n")
+
     return metadata
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Download Fastq on ENA database. Made by Vinh Chau ("
-                                                 "chauvinhtth13@gmail.com)")
+    parser = argparse.ArgumentParser(description="Download Fastq on ENA database. Made by Vinh Chau "
+                                                 "(chauvinhtth13@gmail.com)")
     parser.add_argument("-if", "--ifile", type=str, default="",
                         help="Input list accession number by file (.csv)")
     parser.add_argument("-il", "--list", type=str, default="",
@@ -203,7 +189,7 @@ if __name__ == "__main__":
                              "between accession with comma")
     parser.add_argument("-o", "--output", default=os.getenv("HOME") + "/Downloads", type=str,
                         help="Path directory to save file")
-    parser.add_argument("-m", "--meta_file", default="[metadata]["+current_time+"].csv", type=str,
+    parser.add_argument("-m", "--meta_file", default="[metadata][" + current_time + "].csv", type=str,
                         help="Filename metadata file")
     parser.add_argument("-op", "--download_option", default=0, type=int,
                         help="0: Default Download Metadata and Fastq file \n "
@@ -265,12 +251,18 @@ if __name__ == "__main__":
                     pass
                 full_metadata.extend(each_metadata)
 
-            if args.download_option != 2:
+            if (args.download_option == 0 or args.download_option == 1):
                 with open(os.path.join(args.output, args.meta_file), "w") as f:
                     fc = csv.writer(f, lineterminator="\n")
                     fc.writerows(full_metadata)
-            print("Path metadata: " + os.path.join(args.output, args.meta_file))
-            print("Done. See ya!!!! ^_^.")
+                print("Path metadata: " + os.path.join(args.output, args.meta_file))
+                print("Done. See ya!!!! ^_^.")
+
+            if (args.download_option == 0 or args.download_option == 2):
+                if os.path.exists(os.path.join(args.output, links_txt_file)):
+                    subprocess.run([path_to_aria2, '-x', '64', '--continue=true', '-i', os.path.join(args.output, links_txt_file), '-d', args.output])
+                else:
+                    print(f"ERROR: '{links_txt_file}' not found.")
         else:
             print("Thank you. Bye!! T_T ")
             sys.exit(0)
