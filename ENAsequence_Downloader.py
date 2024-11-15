@@ -218,7 +218,7 @@ if __name__ == "__main__":
                 else:
                     print(f"ERROR: '{links_txt_file}' not found!")
         else:
-            print("Thank you. Goodbye :)")
+            print("Thank you. Bye!! ")
             sys.exit(0)
     else:
         parser.print_help()
