@@ -1,7 +1,7 @@
-# ENA Database Downloader
-Using download multi fastq on ENA database
-## Overview
-`ENAdatabase-Downloader` is a versatile tool for effortlessly downloading FASTQ sequences and metadata from the European Nucleotide Archive (ENA). This tool is written on Python, providing an 'easy-to-use command-line interface' and enhanced download speed compared to traditional method like `wget`.
+# ENA Sequence Database Downloader
+`ENASequence-Downloader` is a script designed for seamless downloading of FASTQ sequences and metadata from the European Nucleotide Archive (ENA). Developed in Python, this tool features a user-friendly command-line interface and offers faster download speeds compared to conventional methods such as `wget` or `curl`.
+
+## License
 
 ## Features
 - **Easy to Use:** simplifies the process of downloading FASTQ sequences and metadata from ENA.
