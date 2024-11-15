@@ -15,8 +15,7 @@ To install the necessary Python packages, run:
 ```pip install -r requirements.txt```
 This will install the following dependencies:
 * python >= 3.10
-* requests >= 2.0.0
-* tqdm >= 4.0.10
+* aria2 >= 1.36.0
 
 ## Options
 
