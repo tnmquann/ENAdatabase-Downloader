@@ -9,3 +9,39 @@ This script is licensed under the Apache License, Version 2.0. You are free to u
 - **Compatibility:** optimized for Unix operating systems and maintains good compatibility with Windows.
 - **Fast Load Speed:** increase download speeds compared to traditional tools like `wget` on Unix systems.
 - **Customizable:** easily adjustable, allowing users to tailor the tool for specific download requirements.
+
+## Requirements
+To install the necessary Python packages, run:
+```pip install -r requirements.txt```
+This will install the following dependencies:
+* python >= 3.10
+* requests >= 2.0.0
+* tqdm >= 4.0.10
+
+## Options
+
+```
+ -if, --ifile DIR_TO_FILE                  Input list accession number by text file (*.txt, *.csv, .etc).
+                                           Each accession should be written into separate lines.
+ -il, --ilist STRING                       Input list accession number by string.
+                                           Each accession should be separated by comma, without any spaces between. For example: accession_1,accession_2,...,accession_N.
+ -o, --output DIR                          Path to output directory.
+ -m, --meta_file NAME                      Change the name of metadata `*.csv` file output.
+ -op, --download_option NUMBER             Change download option (default = 0).
+                                           0: Download both `fastq.gz` files and metadata
+                                           1: Download only metadata
+                                           2: Download only `fastq.gz` files.
+```
+
+## How to cite
+```
+@misc{ENAsequences_download,
+  author = {Vinh Chau and Minh-Quan Ton-Ngoc},
+  title = {ENAsequences-Downloader},
+  year = {2018},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/chauvinhtth13/ENAsequences-Downloader}},
+}
+```
+Feel free to explore the different versions and choose the one that best fits your needs. Happy coding!
